@@ -1,0 +1,2 @@
+- pada citra 087_02 dan 087_05 : nilai dari whiteDis 500 
+- pada citra 087_03 : nilai dari whiteDis 530 

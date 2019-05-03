@@ -1,0 +1,1 @@
+1. pada morfologi opening nilai sz = 17 dan didapatkan jumlah koordinat output sebanyak 9

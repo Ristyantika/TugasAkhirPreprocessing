@@ -1,0 +1,1 @@
+1. Pada Morfologi opening nilai sz = 20 sehingga didapatkan jumlah koordinat output sebanyak 11
