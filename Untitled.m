@@ -15,7 +15,6 @@ imadf = anisodiff2D(imanr, 50, 1/7, 20, 1);
 imwrite(imadf, 'anistropic.jpg');
 %     convert ke uint8
 imapa= uint8(round(imadf-1));
-
 %     Image Closing
 se = strel('disk',3);
 imageClose = imclose(imapa,se);
