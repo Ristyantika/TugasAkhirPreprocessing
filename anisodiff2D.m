@@ -121,6 +121,7 @@ for t = 1:num_iter
                   (1/(dx^2))*cW.*nablaW + (1/(dx^2))*cE.*nablaE + ...
                   (1/(dd^2))*cNE.*nablaNE + (1/(dd^2))*cSE.*nablaSE + ...
                   (1/(dd^2))*cSW.*nablaSW + (1/(dd^2))*cNW.*nablaNW );
+           
         % Iteration warning.
         %fprintf('\rIteration %d\n',t);
 end

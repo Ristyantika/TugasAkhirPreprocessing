@@ -1,14 +1,12 @@
 %function pre_process = preprocess_palm(~)
 
 %Ekstrak Data Testing
- 
 datanama = dir(strcat('D:\Nuzul Kuliah\TA\PalmVein\*.jpg'));
 for i=1:length(datanama)    
     tmp = strcat('D:\Nuzul Kuliah\TA\PalmVein\',datanama(i).name);
-    fileo = strcat('D:\Nuzul Kuliah\TA\dataKecil\', datanama(i).name);
-    disp(tmp)
+    fileo = strcat('D:\Nuzul Kuliah\TA\SmallData\', datanama(i).name);
     img_inn = imread(tmp);
-%     fiturI = rgb2gray(img_inn);
+    
 %img_inn = imread('D:\KULIAH\SEMESTER 8\TA\DataPalm\001_l_940_02.jpg');
     %% CROPPING
     %%
@@ -22,7 +20,7 @@ for i=1:length(datanama)
     % ROI - Noise Removal
     se = strel('disk',17);        
     imgbw = imopen(imgbw_in,se); %morfologi opening
-    
+%     imwrite(imgbw,fileo);
     ctrImg = zeros(size(imgbw,1),size(imgbw,2)); %matrix m x m
     
     %region of interest (r x c)
@@ -83,7 +81,6 @@ for i=1:length(datanama)
             newCoor = coor + posisi;
             if newCoor(1,1) > 0 && newCoor(1,2) > 0 && newCoor(1,1) < maksCoorR && newCoor(1,2) < maksCoorC
                 if imgbw(newCoor(1,1),newCoor(1,2))== 1
-%                     disp("lala")
                     ctrImg(newCoor(1,1),newCoor(1,2))=1;
                     coor = newCoor;
                     a = (newCoor(1,1)-coorHalfWrist(1,1))^2;
@@ -106,7 +103,7 @@ for i=1:length(datanama)
             indikator = 0;
         end
     end
-    
+
     % Distance Distribution Diagram
     for i = 1:size(coorDis(:,3))
         sumbuX(1,i) = i;
@@ -115,22 +112,12 @@ for i=1:length(datanama)
     newCoorDis = zeros(size(coorDis,1),size(coorDis,2),size(coorDis,3));
     newCoorDis(1:size(coorDis,1)-r+1,:) = coorDis(r:size(coorDis,1),:);
     newCoorDis(size(coorDis,1)-r+2:size(coorDis),:) = coorDis(1:r-1,:);
-%     new
+    %new
     zeroDis = 550;
     [r c] = find(newCoorDis(:,1)>zeroDis);
-%     ctrImg(newCoorDis(r,1),newCoorDis(r,2)) = 0;
-%     imwrite(ctrImg,fileo);
     newCoorDis(r,3) = 0;
-    
-%     for ii=1:size(newCoorDis,1)
-%         if newCoorDis(ii,3)==0
-%             ctrImg(newCoorDis(ii,1),newCoorDis(ii,2)) = 0;
-%         end
-%     end
-
     % mencari peak dari diagram - new
     output = fpeak(sumbuX,newCoorDis(:,3),50);
-    
     % improve output -> salah satu dari 2 peak yang bernilai sama akan dihapus
     for i=1:size(output,1)-1
         if output(i,2)==output(i+1,2)
@@ -139,13 +126,11 @@ for i=1:length(datanama)
             output(i,3) = 0;
         end
     end
-    
     %output peak
     improveOut = find(output(:,3)==1);
     improveOut = sort(improveOut,'descend');
-    
-    for j=1:size(improveOut)
-        output(improveOut(j,1),:)=[];
+    for i=1:size(improveOut)
+        output(improveOut(i,1),:)=[];
     end
     
     % ROI - menetukan titik P1 dan P2 dari distance diagram
@@ -159,9 +144,8 @@ for i=1:length(datanama)
     temp = (coorP2(1,2)-coorP1(1,2))/(coorP2(1,1)-coorP1(1,1));
     rad = atan(temp);
     deg = rad/pi*180;
-    
     newImg = imrotate(img,90-deg,'bilinear','crop');
-%     ROI - new P1 dan new P2
+    % ROI - new P1 dan new P2
     temp = zeros(size(img,1), size(img,2));
     temp(coorP1(1,1), coorP1(1,2)) = 1;
     temp(coorP2(1,1), coorP2(1,2)) = 1;
@@ -171,60 +155,46 @@ for i=1:length(datanama)
     newCoorP1(1,2) = j(1);
     newCoorP2(1,1) = i(size(i,1));
     newCoorP2(1,2) = j(size(j,1));
-%     for j=1:size(imgbw_in,2) - coorP1(1,2)
-%         imgbw_in(coorP1(1,1), (coorP1(1,2) - j)) = 0;
-%     end
-    plot([newCoorP1(1,2),newCoorP2(1,2)],[newCoorP1(1,1),newCoorP2(1,1)],'Color','r','LineWidth',2);
-%     new P3 dan P4
+
+    %plot([newCoorP1(1,2),newCoorP2(1,2)],[newCoorP1(1,1),newCoorP2(1,1)],'Color','r','LineWidth',2);
+    % new P3 dan P4
     a = (newCoorP1(1,1)-newCoorP2(1,1))^2;
     b = (newCoorP1(1,2)-newCoorP2(1,2))^2;
     distance = sqrt( a + b );
-    
-%    check region 
-%     for a=1:distance
-%         for b=1:distance
-%             newImg(a+newCoorP1(1,1), b+newCoorP1(1,2)) = 1;
-%         end
-%     end
-%     imwrite(newImg, fileo);
-
-%     ROI - output
-    
+    % ROI - output
     fiturI = imcrop(newImg, [newCoorP1(1,2), newCoorP1(1,1), distance , distance]);
-    
-%     fiturImg = imresize(fiturI,[150 150]);
-    
-%     Resize Image interpolasi bikubik
+
+    %% Resize Image interpolasi bikubik
     b = imresize(fiturI,[224 224]);
 
-%     PREPROCESSING
-%     Median Filter
+    %% PREPROCESSING
+    %% Median Filter
     immed = medfilt2(b,[10 10]);
-
-%     Adaptive Histeq
+    
+    %% Adaptive Histeq
     imadapt = adapthisteq(immed,'clipLimit',0.08,'Distribution','rayleigh');
 
-%     Adaptive Noise Removal
+    %% Adaptive Noise Removal
     imanr = wiener2(imadapt,[12 12]);
 
-%     Anisotropic Diffusion Filter
-    imadf = anisodiff2D(imanr, 50, 1/7, 20, 1);
-    
-%     convert ke uint8
+    %% Anisotropic Diffusion Filter
+    imadf = anisodiff2D(imanr, 10, 1/7, 20, 1);
+    % convert ke uint8
     imapa= uint8(round(imadf-1));
 
-%     Image Closing
+    %% Image Closing
     se = strel('disk',3);
     imageClose = imclose(imapa,se);
 
-%     Substract Image
+    %% Substract Image
     imsub = imsubtract(imageClose,imapa);
-
-%     Adjust Image
+    
+    %% Adjust Image
     imadj = imadjust(imsub);
     
-%     Image Resizing
+    %% Image Resizing
     img_in = imresize(imadj,[224 224]);
     imshow(img_in);
+     
     imwrite(img_in, fileo);
 end
